@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "WebAI Repair",
-  description: "Hệ thống đặt lịch sửa chữa thông minh",
+  description: "Smart repair scheduling system",
 };
 
 export default function RootLayout({

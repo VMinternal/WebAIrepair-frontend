@@ -31,16 +31,16 @@ export default function BookingPage() {
       });
 
       if (res.ok) {
-        setMessage('🎉 Đặt lịch thành công! Kỹ thuật viên sẽ liên hệ lại ngay.');
+        setMessage('🎉 Appointment booked successfully! A technician will contact you shortly.');
         // Reset form
         setCustomerName('');
         setPhone('');
         setDescription('');
       } else {
-        setMessage('❌ Có lỗi xảy ra. Vui lòng thử lại!');
+        setMessage('❌ An error occurred. Please try again!');
       }
     } catch (error) {
-      setMessage('❌ Không thể kết nối tới máy chủ!');
+      setMessage('❌ Unable to connect to the server!');
     } finally {
       setLoading(false);
     }
@@ -49,77 +49,74 @@ export default function BookingPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white">Đăng Ký Lịch Sửa Chữa</h1>
-        <p className="text-slate-400 mt-1">Vui lòng điền thông tin thiết bị cần sửa chữa vào form dưới đây.</p>
+        <h1 className="text-3xl font-bold text-white">Schedule a Repair Appointment</h1>
+        <p className="text-slate-400 mt-1">Please fill in the information about the device that needs repair in the form below.</p>
       </div>
 
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Tên khách hàng */}
+          {/* Customer name */}
           <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Tên khách hàng</label>
+            <label className="block text-sm font-semibold text-slate-300 mb-2">Customer name</label>
             <input
               type="text"
               required
-              placeholder="Ví dụ: Nguyễn Văn A"
+              placeholder="For example: Nguyen Van A"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
             />
           </div>
 
-          {/* Số điện thoại */}
+          {/* Phone number */}
           <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Số điện thoại</label>
+            <label className="block text-sm font-semibold text-slate-300 mb-2">Phone number</label>
             <input
               type="tel"
               required
-              placeholder="Ví dụ: 0901234567"
+              placeholder="For example: 0901234567"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
             />
           </div>
 
-          {/* Loại thiết bị */}
+          {/* Type of device */}
           <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Loại thiết bị cần sửa</label>
+            <label className="block text-sm font-semibold text-slate-300 mb-2">Type of device needs repair</label>
             <select
               value={deviceType}
               onChange={(e) => setDeviceType(e.target.value)}
               className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
             >
-              <option value="Laptop">Laptop / Máy tính xách tay</option>
-              <option value="PC">PC / Máy tính để bàn</option>
-              <option value="Phone">Điện thoại di động</option>
-              <option value="Tablet">Máy tính bảng</option>
+              <option value="Phone">Cellular phone</option>
             </select>
           </div>
 
-          {/* Mô tả lỗi */}
+          {/* Error description */}
           <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Mô tả chi tiết tình trạng lỗi</label>
+            <label className="block text-sm font-semibold text-slate-300 mb-2">Provide a detailed description of the error.</label>
             <textarea
               rows={4}
               required
-              placeholder="Mô tả hiện tượng lỗi (Ví dụ: Bật không lên nguồn, màn hình bị sọc xanh...)"
+              placeholder="Describe the malfunction (e.g., won't power on, screen has blue lines...)."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition resize-none"
             />
           </div>
 
-          {/* Nút gửi */}
+          {/*Submit button */}
           <button
             type="submit"
             disabled={loading}
             className="w-full py-3.5 px-4 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 text-slate-950 font-bold rounded-lg transition duration-200"
           >
-            {loading ? 'Đang gửi thông tin...' : 'Gửi Yêu Cầu Đặt Lịch 🛠️'}
+            {loading ? 'Sending information...' : 'Submitting Appointment Request 🛠️'}
           </button>
         </form>
 
-        {/* Thông báo trạng thái */}
+        {/* Status notification */}
         {message && (
           <div className={`mt-6 p-4 rounded-lg text-sm text-center font-medium ${
             message.includes('❌') ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'

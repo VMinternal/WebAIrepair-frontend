@@ -1,4 +1,4 @@
-'use client'; // Bắt buộc phải có vì Next.js App Router dùng Hook
+'use client'; // This is mandatory because Next.js App Router uses hooks.
 
 import { useState } from 'react';
 
@@ -33,7 +33,7 @@ export default function BookingForm({ setActiveTab }: BookingFormProps) {
         body: JSON.stringify({
           customerName,
           phone,
-          deviceModel, // Backend của bạn sẽ xử lý logic map chuỗi này sang UUID của bảng devices
+          deviceModel, // The backend handles the logic for mapping this string to the UUID of the devices table.
           issueDescription,
         }),
       });
@@ -41,12 +41,12 @@ export default function BookingForm({ setActiveTab }: BookingFormProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Có lỗi xảy ra khi đặt lịch. Vui lòng thử lại!');
+        throw new Error(data.message || 'An error occurred while scheduling. Please try again!');
       }
 
   
       setIsError(false);
-      setBookingMessage('🎉 Đăng ký đặt lịch thành công! Nhân viên sẽ liên hệ bạn sớm nhất.');
+      setBookingMessage('🎉 Your appointment booking was successful! A staff member will contact you soon.');
       
       setCustomerName('');
       setPhone('');
@@ -55,7 +55,7 @@ export default function BookingForm({ setActiveTab }: BookingFormProps) {
 
     } catch (error: any) {
       setIsError(true);
-      setBookingMessage(error.message || 'Không thể kết nối tới máy chủ lúc này.');
+      setBookingMessage(error.message || 'Unable to connect to the server at this time.');
     } finally {
       setBookingLoading(false);
     }
@@ -72,10 +72,10 @@ export default function BookingForm({ setActiveTab }: BookingFormProps) {
       
       <div className="mb-6">
         <h3 className="text-2xl font-black text-white tracking-wide">Đăng Ký Đặt Lịch</h3>
-        <p className="text-slate-400 text-xs mt-1">Lịch hẹn của bạn sẽ được đồng bộ trực tiếp lên Database.</p>
+        <p className="text-slate-400 text-xs mt-1">Your appointment schedule will be synchronized directly to the database.</p>
       </div>
       
-      {/* Form được kích hoạt trigger gửi dữ liệu */}
+      {/* The form has triggered the data submission.*/}
       <form onSubmit={handleBookingSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
@@ -83,14 +83,14 @@ export default function BookingForm({ setActiveTab }: BookingFormProps) {
             <input 
               type="text" 
               required 
-              placeholder="Nguyễn Văn Vương" 
+              placeholder="Vuong Quang Minh" 
               value={customerName} 
               onChange={(e) => setCustomerName(e.target.value)} 
               className="w-full p-3 bg-slate-950/80 border border-slate-800/80 rounded-xl text-sm text-white focus:border-emerald-500 focus:outline-none transition" 
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Số điện thoại</label>
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Phone number</label>
             <input 
               type="text" 
               required 
@@ -103,11 +103,11 @@ export default function BookingForm({ setActiveTab }: BookingFormProps) {
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tên thiết bị & Dòng máy</label>
+          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Device Name & Model</label>
           <input 
             type="text" 
             required 
-            placeholder="Macbook Pro M2, iPhone 15 Pro..." 
+            placeholder="iPhone 14 Pro, iPhone 15 Pro..." 
             value={deviceModel} 
             onChange={(e) => setDeviceModel(e.target.value)} 
             className="w-full p-3 bg-slate-950/80 border border-slate-800/80 rounded-xl text-sm text-white focus:border-emerald-500 focus:outline-none transition" 
@@ -115,10 +115,10 @@ export default function BookingForm({ setActiveTab }: BookingFormProps) {
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Mô tả tình trạng hư hỏng</label>
+          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Describe the damage.</label>
           <textarea 
             required 
-            placeholder="Mô tả cụ thể lỗi..." 
+            placeholder="Describe the error in detail..." 
             value={issueDescription} 
             onChange={(e) => setIssueDescription(e.target.value)} 
             className="w-full p-3 bg-slate-950/80 border border-slate-800/80 rounded-xl text-sm text-white resize-none focus:border-emerald-500 focus:outline-none transition" 
@@ -131,7 +131,7 @@ export default function BookingForm({ setActiveTab }: BookingFormProps) {
           disabled={bookingLoading} 
           className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black rounded-xl hover:from-emerald-400 hover:to-teal-400 transition text-sm uppercase tracking-wider disabled:opacity-50"
         >
-          {bookingLoading ? 'Hệ thống đang ghi nhận...' : 'Gửi Yêu Cầu Đặt Lịch'}
+          {bookingLoading ? 'The system is recording...' : 'Submit Appointment Request'}
         </button>
       </form>
 

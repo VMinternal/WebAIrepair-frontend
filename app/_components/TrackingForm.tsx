@@ -31,20 +31,20 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
         if (data && (Array.isArray(data) ? data.length > 0 : data)) {
           setTrackingResult(data); 
         } else {
-          setTrackingError('🔍 Không tìm thấy thông tin lịch hẹn nào gắn với số điện thoại này!');
+          setTrackingError('🔍 No appointment information was found associated with this phone number!');
         }
       } else {
-        setTrackingError(`❌ Lỗi hệ thống: ${data.message || 'Không thể tra cứu'}`);
+        setTrackingError(`❌ System error: ${data.message || 'Unable to search'}`);
       }
     } catch (error) {
-      // Giả lập Dữ liệu Demo phòng trường hợp Backend chưa chạy endpoint search
-      console.log("Chưa kết nối API search, hiển thị dữ liệu demo");
+      // This is a demo data simulation in case the backend hasn't run the search endpoint yet.
+      console.log("API search not yet connected, displaying demo data.");
       setTrackingResult({
-        customer_name: "Nguyễn Văn Vương",
+        customer_name: "Vuong Quang Minh",
         phone: searchPhone,
-        device_name: "Macbook Pro M2",
+        device_name: "iPhone 14 Pro Max",
         issue_description: "Màn hình sọc ngang, loang màu nhẹ",
-        status: "repairing", // Trạng thái test khớp chuẩn DB: pending | repairing | completed
+        status: "repairing", // DB matching test status: pending | repairing | completed
         createdAt: new Date().toISOString()
       });
     } finally {
@@ -66,15 +66,15 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
       </button>
       
       <div className="mb-6">
-        <h3 className="text-2xl font-black text-white tracking-wide">Tra Cứu Tiến Độ 🔍</h3>
-        <p className="text-slate-400 text-xs mt-1">Nhập số điện thoại để kiểm tra trạng thái sửa chữa thời gian thực.</p>
+        <h3 className="text-2xl font-black text-white tracking-wide">Check Progress 🔍</h3>
+        <p className="text-slate-400 text-xs mt-1">Enter your phone number to check the repair status in real time.</p>
       </div>
 
       <form onSubmit={handleTrackingSearch} className="flex gap-2 mb-6">
         <input 
           type="text" 
           required 
-          placeholder="Nhập số điện thoại của bạn..." 
+          placeholder="Enter your phone number..." 
           value={searchPhone} 
           onChange={(e) => setSearchPhone(e.target.value)} 
           className="flex-grow p-3.5 bg-slate-950/80 border border-slate-800/80 rounded-xl text-sm text-white focus:border-emerald-500 focus:outline-none transition" 
@@ -84,23 +84,23 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
           disabled={trackingLoading} 
           className="px-6 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black rounded-xl hover:from-emerald-400 hover:to-teal-400 transition text-sm disabled:opacity-50"
         >
-          {trackingLoading ? 'Tìm...' : 'Tìm Kiếm'}
+          {trackingLoading ? 'Find...' : 'Search'}
         </button>
       </form>
 
     
       {trackingResult && (() => {
-        // Chuẩn hóa dữ liệu phòng trường hợp DB trả về mảng hoặc object đơn lẻ
+        // Normalize the data in case the database returns an array or a single object.
         const appointmentData = Array.isArray(trackingResult) ? trackingResult[0] : trackingResult;
         if (!appointmentData) return null;
 
-        // ✨ SỬA LỖI 2: Fallback an toàn lấy cả từ DB lẫn MockData demo không lo crash
-        const deviceName = appointmentData.device?.model || appointmentData.device_name || 'Thiết bị đang cập nhật';
-        const issueDesc = appointmentData.issueDescription || appointmentData.issue_description || 'Chưa cập nhật lỗi chi tiết';
+        // Safe fallback retrieves data from both the database and mock data in the demo, so there's no need to worry about crashes.
+        const deviceName = appointmentData.device?.model || appointmentData.device_name || 'The device is updating.';
+        const issueDesc = appointmentData.issueDescription || appointmentData.issue_description || 'Detailed bug reports have not yet been updated.';
         const rawDate = appointmentData.appointmentDate || appointmentData.createdAt;
-        const formattedDate = rawDate ? new Date(rawDate).toLocaleString('vi-VN') : 'Mới cập nhật';
+        const formattedDate = rawDate ? new Date(rawDate).toLocaleString('vi-VN') : 'Newly updated';
 
-        // ✨ SỬA LỖI 1: Lấy status chuẩn từ appointmentData thay vì trackingResult gốc
+        // Get the correct status from appointmentData instead of the original trackingResult
         const statusDb = appointmentData.status?.toLowerCase() || 'pending';
 
         return (
@@ -122,9 +122,9 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
                   'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
               }`}>
                 ● {
-                  statusDb === 'completed' || statusDb === 'done' ? 'Đã hoàn thành' : 
-                  statusDb === 'repairing' || statusDb === 'processing' ? 'Đang sửa chữa' : 
-                  'Chờ tiếp nhận'
+                  statusDb === 'completed' || statusDb === 'done' ? 'Completed' : 
+                  statusDb === 'repairing' || statusDb === 'processing' ? 'repairing' : 
+                  'Awaiting receipt'
                 }
               </span>
             </div>
@@ -135,12 +135,12 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
               <p><span className="text-slate-500 font-medium">Ngày đặt lịch:</span> <span className="text-slate-400">{formattedDate}</span></p>
             </div>
 
-            {/* Timeline tiến độ sửa chữa thực tế */}
+            {/* Timeline of actual repair progress */}
             <div className="pt-2 border-t border-slate-800/60">
-              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-3">Hành trình sửa chữa:</p>
+              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-3">Repair process:</p>
               <div className="grid grid-cols-3 gap-2 text-[10px] font-bold text-center">
                 <div className="p-2 rounded-lg border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                  ✓ ĐÃ ĐẶT
+                  ✓ BOOKED
                 </div>
                 
                 <div className={`p-2 rounded-lg border transition-all ${
@@ -148,7 +148,7 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
                     ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
                     : 'bg-slate-900 text-slate-600 border-slate-850'
                 }`}>
-                  ⚙️ ĐANG SỬA
+                  ⚙️ UNDER REPAIR
                 </div>
                 
                 <div className={`p-2 rounded-lg border transition-all ${
@@ -156,7 +156,7 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
                     ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
                     : 'bg-slate-900 text-slate-600 border-slate-850'
                 }`}>
-                  🎁 XONG
+                  🎁 COMPLETED
                 </div>
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
         );
       })()}
 
-      {/* Thông báo lỗi nếu tra cứu không ra dữ liệu */}
+      {/* Error message if data is not found after the search. */}
       {trackingError && (
         <div className="p-4 rounded-xl text-xs text-center font-bold border bg-red-500/10 text-red-400 border-red-500/20 mt-4">
           {trackingError}

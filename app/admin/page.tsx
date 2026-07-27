@@ -56,7 +56,7 @@ export default function AdminPage() {
   );
 }
 
-// Sub-component hiển thị Thẻ thông số
+// Sub-component displays the Parameter Card.
 function StatCard({ title, value, change, icon, color }: any) {
   return (
     <div className={`p-5 bg-slate-900 border ${color} rounded-2xl flex items-center justify-between`}>

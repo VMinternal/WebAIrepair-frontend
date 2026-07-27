@@ -49,7 +49,7 @@ export default function AdminLayout({
       <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between p-4 flex-shrink-0 h-screen sticky top-0">
         <div>
           {/* Logo Brand */}
-          <Link href="/admin" className="flex items-center space-x-3 px-3 py-4 mb-6 border-b border-slate-800 block">
+          <Link href="/" className="flex items-center space-x-3 px-3 py-4 mb-6 border-b border-slate-800 block">
             <span className="text-2xl">🛠️</span>
             <div>
               <h1 className="font-black text-base bg-gradient-to-r from-emerald-400 to-blue-500 bg-clip-text text-transparent">
@@ -72,14 +72,12 @@ export default function AdminLayout({
               icon="👥" 
               label="User Management" 
               active={pathname === '/admin/users'} 
-              badge="12"
             />
             <SidebarLink 
               href="/admin/issues" 
               icon="🛠️" 
               label="Fault Management & Diagnosis" 
-              active={pathname === '/admin/issues'} 
-              badge="5 New"
+              active={pathname === '/admin/issues'}
               badgeColor="bg-amber-500/20 text-amber-400"
             />
             <SidebarLink 

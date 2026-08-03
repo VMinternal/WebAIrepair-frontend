@@ -24,5 +24,18 @@ email: string;
   isActive?: boolean;
 }
 
+export interface PaginationMeta {
+  totalItems: number;
+  itemCount: number;
+  itemsPerPage: number;
+  totalPages: number;
+  currentPage: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: PaginationMeta;
+}
+
 // Data type for updating User (allows submission with missing fields)
 export type UpdateUserInput = Partial<CreateUserInput>; 

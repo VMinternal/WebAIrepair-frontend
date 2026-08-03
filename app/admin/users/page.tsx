@@ -32,8 +32,8 @@ export default function AdminUsersPage() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const data = await userService.getUsers();
-      setUsers(data);
+      const res = await userService.getUsers();
+      setUsers(res.data);
       setError(null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Unable to load user list');

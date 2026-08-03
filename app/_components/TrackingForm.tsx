@@ -8,7 +8,7 @@ interface TrackingFormProps {
 }
 
 export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
-  // 1. Quản lý các State tra cứu tiến độ
+  // Managing State Processes
   const [searchPhone, setSearchPhone] = useState('');
   const [trackingLoading, setTrackingLoading] = useState(false);
   const [trackingResult, setTrackingResult] = useState<any>(null);

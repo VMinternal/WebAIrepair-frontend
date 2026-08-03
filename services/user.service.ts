@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { User, CreateUserInput, UpdateUserInput } from '@/types/user';
+import { User, CreateUserInput, UpdateUserInput, PaginatedResponse } from '@/types/user';
 
 // NestJS Backend URL
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -16,8 +16,11 @@ const getAuthHeader = () => {
 
 export const userService = {
   // Get a list of all users.
-  async getUsers(): Promise<User[]> {
-    const res = await axios.get<User[]>(`${API_URL}/users`, getAuthHeader());
+  async getUsers(page = 1, limit = 10): Promise<PaginatedResponse<User>> {
+   const res = await axios.get<PaginatedResponse<User>>(`${API_URL}/users`, {
+      ...getAuthHeader(),
+      params: { page, limit }, 
+    });
     return res.data;
   },
 

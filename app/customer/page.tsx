@@ -56,7 +56,7 @@ export default function CustomerPortalPage() {
         </Link>
       </header>
 
-      {/* Giao diện chính */}
+      {/* Main interface */}
       <div className="flex-grow flex items-center justify-center px-4 py-12 relative">
         <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[150px] pointer-events-none" />

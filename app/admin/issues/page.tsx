@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Issue } from '@/types/issue';
 import { PaginationMeta } from '@/types/user';
 import { issueService } from '@/services/issue.service';
+import { deviceService } from '@/services/device.service';
 
 interface DeviceOption {
   id: string;
@@ -56,15 +57,19 @@ export default function AdminIssuesPage() {
 
   // Load the list of Devices & Parts to serve the Form.
   const loadOptions = async () => {
-    try {
-      if (typeof (issueService as any).getDevices === 'function') {
-        const devRes = await (issueService as any).getDevices();
-        setDevices(devRes);
-      }
-      if (typeof (issueService as any).getParts === 'function') {
-        const partRes = await (issueService as any).getParts();
-        setParts(partRes);
-      }
+  try {
+    // Call directly from deviceService
+    const devRes = await deviceService.getDevices(1, 100);
+    // Safely handle cases where the API returns either an array [...] or an object { data: [...] }.
+    const deviceList = Array.isArray(devRes) ? devRes : (devRes?.data || []);
+    setDevices(deviceList);
+
+    // Retrieve the list of parts
+    if (typeof (issueService as any).getParts === 'function') {
+      const partRes = await (issueService as any).getParts();
+      const partList = Array.isArray(partRes) ? partRes : (partRes?.data || []);
+      setParts(partList);
+    }
     } catch (err) {
       console.error('Error loading options:', err);
     }
@@ -107,20 +112,40 @@ export default function AdminIssuesPage() {
     }
   };
 
-  const handleFormSubmit = async (formData: IssueFormData) => {
-    try {
-      if (selectedIssue) {
-        await issueService.updateIssue(selectedIssue.id, formData);
-      } else {
-        await issueService.createIssue(formData);
-      }
-      setIsModalOpen(false);
-      loadIssues(meta?.currentPage || 1);
-    } catch (err) {
-      console.error('Error saving issue:', err);
-      alert('Saving issues failed!');
+ const handleFormSubmit = async (formData: IssueFormData) => {
+  try {
+    // Clean the payload (convert empty strings to `undefined` to avoid validation errors)
+    const payload: any = {
+      title: formData.title.trim(),
+      description: formData.description?.trim() || undefined,
+      causes: formData.causes?.trim() || undefined,
+      solutions: formData.solutions?.trim() || undefined,
+    };
+
+    // Only send the deviceId when the user actually makes a selection.
+    if (formData.deviceId) {
+      payload.deviceId = formData.deviceId;
     }
-  };
+
+    if (formData.partIds && formData.partIds.length > 0) {
+      payload.partIds = formData.partIds;
+    }
+
+    // Call the create or update API
+    if (selectedIssue) {
+      await issueService.updateIssue(selectedIssue.id, payload);
+    } else {
+      await issueService.createIssue(payload);
+    }
+
+    setIsModalOpen(false);
+    loadIssues(meta?.currentPage || 1);
+  } catch (err: any) {
+    // Catch and accurately display errors returned by the backend.
+    const serverMessage = err.response?.data?.message || err.message;
+    alert(`Saving issue failed: ${Array.isArray(serverMessage) ? serverMessage.join(', ') : serverMessage}`);
+  }
+};
 
   useEffect(() => {
     loadIssues();
@@ -451,24 +476,24 @@ function IssueModal({
             />
           </div>
 
-          {/* Target Device */}
+         {/* Target Device */}
           <div>
             <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
               Target Device
             </label>
             <select
-              value={formData.deviceId}
+              value={formData.deviceId || ''}
               onChange={(e) => setFormData({ ...formData, deviceId: e.target.value })}
               className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
             >
               <option value="">-- Select a device --</option>
-              {devices.map((dev) => (
+              {devices.map((dev: any) => (
                 <option key={dev.id} value={dev.id}>
-                  {dev.model}
+                  {dev.brand ? `${dev.brand} ${dev.model}` : dev.model || dev.name}
                 </option>
               ))}
             </select>
-          </div>
+            </div>
 
           {/* Description */}
           <div>

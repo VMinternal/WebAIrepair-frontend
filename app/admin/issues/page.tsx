@@ -1,29 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Issue } from '@/types/issue';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Issue, DeviceOption, PartOption, IssueFormData } from '@/types/issue';
 import { PaginationMeta } from '@/types/user';
-import { issueService } from '@/services/issue.service';
+import { issueService, CreateIssueInput } from '@/services/issue.service';
 import { deviceService } from '@/services/device.service';
+import { partService } from '@/services/partService';
 
-interface DeviceOption {
-  id: string;
-  model: string;
-}
 
-interface PartOption {
-  id: string;
-  name: string;
-}
-
-interface IssueFormData {
-  title: string;
-  description: string;
-  deviceId: string;
-  causes: string;
-  solutions: string;
-  partIds: string[];
-}
 
 export default function AdminIssuesPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -32,6 +16,7 @@ export default function AdminIssuesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   // Dynamic Options cho Modal Select
   const [devices, setDevices] = useState<DeviceOption[]>([]);
@@ -40,7 +25,7 @@ export default function AdminIssuesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAiSearching, setIsAiSearching] = useState(false);
 
-  // Load Incident list
+  // Load Issues list
   const loadIssues = async (page = 1) => {
     try {
       setLoading(true);
@@ -57,23 +42,23 @@ export default function AdminIssuesPage() {
 
   // Load the list of Devices & Parts to serve the Form.
   const loadOptions = async () => {
-  try {
-    // Call directly from deviceService
-    const devRes = await deviceService.getDevices(1, 100);
-    // Safely handle cases where the API returns either an array [...] or an object { data: [...] }.
-    const deviceList = Array.isArray(devRes) ? devRes : (devRes?.data || []);
-    setDevices(deviceList);
+  if (devices.length > 0 && parts.length > 0) return;
 
-    // Retrieve the list of parts
-    if (typeof (issueService as any).getParts === 'function') {
-      const partRes = await (issueService as any).getParts();
-      const partList = Array.isArray(partRes) ? partRes : (partRes?.data || []);
-      setParts(partList);
-    }
-    } catch (err) {
-      console.error('Error loading options:', err);
-    }
-  };
+  try {
+    const [devRes, partRes] = await Promise.all([
+      deviceService.getDevices(1, 100),
+      partService.getParts(1, 100),
+    ]);
+
+    const deviceList = Array.isArray(devRes) ? devRes : (devRes?.data || []);
+    const partList = Array.isArray(partRes) ? partRes : (partRes?.data || []);
+
+    setDevices(deviceList);
+    setParts(partList);
+  } catch (err) {
+    console.error('Error loading options:', err);
+  }
+};
 
   const handleAiSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,26 +97,18 @@ export default function AdminIssuesPage() {
     }
   };
 
- const handleFormSubmit = async (formData: IssueFormData) => {
+  const handleFormSubmit = async (formData: IssueFormData) => {
   try {
-    // Clean the payload (convert empty strings to `undefined` to avoid validation errors)
-    const payload: any = {
-      title: formData.title.trim(),
-      description: formData.description?.trim() || undefined,
-      causes: formData.causes?.trim() || undefined,
-      solutions: formData.solutions?.trim() || undefined,
-    };
+    setSubmitting(true);
+   const payload: CreateIssueInput = {
+  title: formData.title.trim(),
+  description: formData.description?.trim() || undefined,
+  causes: formData.causes?.trim() || undefined,
+  solutions: formData.solutions?.trim() || undefined,
+  deviceId: formData.deviceId || undefined,
+  partIds: formData.partIds || [],
+  };
 
-    // Only send the deviceId when the user actually makes a selection.
-    if (formData.deviceId) {
-      payload.deviceId = formData.deviceId;
-    }
-
-    if (formData.partIds && formData.partIds.length > 0) {
-      payload.partIds = formData.partIds;
-    }
-
-    // Call the create or update API
     if (selectedIssue) {
       await issueService.updateIssue(selectedIssue.id, payload);
     } else {
@@ -139,11 +116,18 @@ export default function AdminIssuesPage() {
     }
 
     setIsModalOpen(false);
-    loadIssues(meta?.currentPage || 1);
+    
+    if (isAiSearching && searchQuery) {
+      const results = await issueService.searchAi(searchQuery);
+      setIssues(results);
+    } else {
+      loadIssues(meta?.currentPage || 1);
+    }
   } catch (err: any) {
-    // Catch and accurately display errors returned by the backend.
     const serverMessage = err.response?.data?.message || err.message;
     alert(`Saving issue failed: ${Array.isArray(serverMessage) ? serverMessage.join(', ') : serverMessage}`);
+  } finally {
+    setSubmitting(false);
   }
 };
 
@@ -158,7 +142,7 @@ export default function AdminIssuesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white">
-            Incident Management & Diagnosis
+            Issues Management & Diagnosis
           </h1>
           <p className="text-sm text-slate-400 mt-1">
             Quick search with AI Vector Search
@@ -218,9 +202,10 @@ export default function AdminIssuesPage() {
           <table className="w-full text-left text-sm text-slate-300">
             <thead className="bg-slate-950/50 text-slate-400 border-b border-slate-800/80 text-xs uppercase tracking-wider font-semibold">
               <tr>
-                <th className="px-6 py-4">Incident Name</th>
+                <th className="px-6 py-4">Issues Name</th>
                 <th className="px-6 py-4">Device</th>
-                <th className="px-6 py-4">Related Components</th>
+                {/* 1. SỬA TIÊU ĐỀ CỘT: Related Issues -> Related Parts */}
+                <th className="px-6 py-4">Related Parts</th>
                 {isAiSearching && <th className="px-6 py-4">AI Match</th>}
                 <th className="px-6 py-4 text-right">Operation</th>
               </tr>
@@ -251,13 +236,13 @@ export default function AdminIssuesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-3 py-1 bg-slate-800/80 border border-slate-700/60 text-slate-200 rounded-lg text-xs font-medium">
-                        {(issue.device as any)?.model || (issue.device as any)?.name || 'N/A'}
+                        {issue.device?.model || issue.device?.name || 'N/A'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1.5">
                         {issue.parts && issue.parts.length > 0 ? (
-                          issue.parts.map((p) => (
+                          issue.parts.map((p: any) => (
                             <span
                               key={p.id}
                               className="inline-flex items-center px-2.5 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 rounded-lg text-xs font-medium"
@@ -277,25 +262,31 @@ export default function AdminIssuesPage() {
                         </span>
                       </td>
                     )}
-                    <td className="px-6 py-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => {
-                            setSelectedIssue(issue);
-                            setIsModalOpen(true);
-                          }}
-                          className="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-indigo-600/20 hover:text-indigo-300 text-slate-300 border border-slate-700/60 hover:border-indigo-500/40 rounded-lg transition-all duration-150"
-                        >
-                          Update
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(issue.id)}
-                          className="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-rose-600/20 hover:text-rose-300 text-slate-400 border border-slate-700/60 hover:border-rose-500/40 rounded-lg transition-all duration-150"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
+                   <td className="px-6 py-4 text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedIssue(issue);
+                          setIsModalOpen(true);
+                        }}
+                        className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 hover:border-indigo-500/40 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(issue.id)}
+                        className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 hover:border-rose-500/40 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Delete
+                      </button>
+                    </div>
+                  </td>
                   </tr>
                 ))
               )}
@@ -340,30 +331,28 @@ export default function AdminIssuesPage() {
       {/* Custom Confirm Delete Modal */}
       {deletingId && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-[#1a202c] border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 text-left">
-          <h3 className="text-lg font-bold text-white">
-          Confirm incident deletion
-          </h3>
-      
-          <p className="text-sm text-slate-400 leading-relaxed">
-            Are you sure you want to remove this incident? This action cannot be undone.
-          </p>
-
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setDeletingId(null)}
-              className="px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition"
+          <div className="bg-[#1a202c] border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 text-left">
+            <h3 className="text-lg font-bold text-white">
+              Confirm Issues deletion
+            </h3>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Are you sure you want to remove this Issues? This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingId(null)}
+                className="px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition"
               >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirmDelete}
-              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-medium shadow-lg shadow-red-600/30 transition"
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-medium shadow-lg shadow-red-600/30 transition"
               >
-              Agree to delete
-            </button>
+                Agree to delete
+              </button>
             </div>
           </div>
         </div>
@@ -372,6 +361,7 @@ export default function AdminIssuesPage() {
   );
 }
 
+// --- MODAL COMPONENT ---
 function IssueModal({
   isOpen,
   onClose,
@@ -382,18 +372,18 @@ function IssueModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (formData: IssueFormData) => void;
-  initialData: Issue | null;
-  devices?: DeviceOption[];
-  parts?: PartOption[];
+  onSubmit: (formData: any) => void;
+  initialData: any | null;
+  devices?: any[];
+  parts?: any[];
 }) {
-  const [formData, setFormData] = useState<IssueFormData>({
+  const [formData, setFormData] = useState({
     title: '',
     description: '',
     deviceId: '',
     causes: '',
     solutions: '',
-    partIds: [],
+    partIds: [] as string[],
   });
 
   useEffect(() => {
@@ -401,10 +391,10 @@ function IssueModal({
       setFormData({
         title: initialData.title || '',
         description: initialData.description || '',
-        deviceId: (initialData as any).deviceId || (initialData.device as any)?.id || '',
-        causes: (initialData as any).causes || '',
-        solutions: (initialData as any).solutions || '',
-        partIds: initialData.parts ? initialData.parts.map((p) => p.id) : [],
+        deviceId: initialData.deviceId || initialData.device?.id || '',
+        causes: initialData.causes || '',
+        solutions: initialData.solutions || '',
+        partIds: initialData.parts ? initialData.parts.map((p: any) => p.id) : [],
       });
     } else {
       setFormData({
@@ -417,6 +407,14 @@ function IssueModal({
       });
     }
   }, [initialData, isOpen]);
+
+  // Filter part components based on the selected device.
+  const filteredParts = useMemo(() => {
+    if (!formData.deviceId) return parts;
+    return parts.filter(
+      (p) => p.deviceId === formData.deviceId || p.device?.id === formData.deviceId
+    );
+  }, [parts, formData.deviceId]);
 
   if (!isOpen) return null;
 
@@ -439,10 +437,10 @@ function IssueModal({
         <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
           <div>
             <h2 className="text-lg font-bold text-white">
-              {initialData ? 'Edit Incident' : 'Add New Incident'}
+              {initialData ? 'Edit Issues' : 'Add New Issues'}
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Fill in the incident details and mapped hardware info
+              Fill in the Issues details and mapped hardware info
             </p>
           </div>
           <button
@@ -461,10 +459,10 @@ function IssueModal({
           }}
           className="space-y-4 overflow-y-auto pr-1 flex-1"
         >
-          {/* Incident Title */}
+          {/* Issues Title */}
           <div>
             <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
-              Incident Title <span className="text-rose-500">*</span>
+              Issues Title <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -476,14 +474,16 @@ function IssueModal({
             />
           </div>
 
-         {/* Target Device */}
+          {/* Target Device */}
           <div>
             <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
               Target Device
             </label>
             <select
               value={formData.deviceId || ''}
-              onChange={(e) => setFormData({ ...formData, deviceId: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, deviceId: e.target.value, partIds: [] })
+              }
               className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
             >
               <option value="">-- Select a device --</option>
@@ -493,7 +493,7 @@ function IssueModal({
                 </option>
               ))}
             </select>
-            </div>
+          </div>
 
           {/* Description */}
           <div>
@@ -509,16 +509,16 @@ function IssueModal({
             />
           </div>
 
-          {/* Causes & Solutions */}
+          {/* Causes & Solutions - 3. CHUYỂN INPUT THÀNH TEXTAREA */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
                 Causes
               </label>
-              <input
-                type="text"
+              <textarea
+                rows={3}
                 placeholder="Root causes..."
-                className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500 transition"
+                className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500 transition resize-none"
                 value={formData.causes}
                 onChange={(e) => setFormData({ ...formData, causes: e.target.value })}
               />
@@ -528,41 +528,47 @@ function IssueModal({
               <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
                 Solutions
               </label>
-              <input
-                type="text"
+              <textarea
+                rows={3}
                 placeholder="Recommended solution..."
-                className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500 transition"
+                className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500 transition resize-none"
                 value={formData.solutions}
                 onChange={(e) => setFormData({ ...formData, solutions: e.target.value })}
               />
             </div>
           </div>
 
-          {/* Related Components (Parts) */}
+          {/* Related Parts */}
           {parts.length > 0 && (
             <div>
               <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">
-                Related Components
+                Related Parts {formData.deviceId && `(Filtered by selected device)`}
               </label>
               <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-slate-950/40 border border-slate-800 rounded-xl">
-                {parts.map((p) => {
-                  const selected = formData.partIds.includes(p.id);
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => handlePartToggle(p.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                        selected
-                          ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300'
-                          : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      {selected ? '✓ ' : '+ '}
-                      {p.name}
-                    </button>
-                  );
-                })}
+                {filteredParts.length > 0 ? (
+                  filteredParts.map((p: any) => {
+                    const selected = formData.partIds.includes(p.id);
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => handlePartToggle(p.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                          selected
+                            ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300'
+                            : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {selected ? '✓ ' : '+ '}
+                        {p.name}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <span className="text-xs text-slate-500 italic p-1">
+                    No matching parts available for this device.
+                  </span>
+                )}
               </div>
             </div>
           )}

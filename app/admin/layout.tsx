@@ -60,45 +60,51 @@ export default function AdminLayout({
           </Link>
 
           {/* Navigation Menu Links */}
-          <nav className="space-y-1.5">
-            <SidebarLink 
-              href="/admin" 
-              icon="📊" 
-              label="Overview" 
-              active={pathname === '/admin'} 
-            />
-            <SidebarLink 
-              href="/admin/users" 
-              icon="👥" 
-              label="User Management" 
-              active={pathname === '/admin/users'} 
-            />
-            <SidebarLink 
-              href="/admin/issues" 
-              icon="🛠️" 
-              label="Fault Management & Diagnosis" 
-              active={pathname === '/admin/issues'}
-              badgeColor="bg-amber-500/20 text-amber-400"
-            />
-            <SidebarLink 
-              href="/admin/devices" 
-              icon="💻" 
-              label="Equipment Management" 
-              active={pathname === '/admin/devices'} 
-            />
-            <SidebarLink 
-              href="/admin/ai" 
-              icon="🤖" 
-              label="AI Model Management" 
-              active={pathname === '/admin/ai'} 
-            />
-            <SidebarLink 
-              href="/admin/blogs" 
-              icon="📝" 
-              label="Blog Post Management" 
-              active={pathname === '/admin/blogs'} 
-            />
-          </nav>
+         <nav className="space-y-1.5">
+          <SidebarLink 
+            href="/admin" 
+            icon="📊" 
+            label="Overview" 
+            active={pathname === '/admin'} 
+          />
+          <SidebarLink 
+            href="/admin/users" 
+            icon="👥" 
+            label="User Management" 
+            active={pathname === '/admin/users'} 
+          />
+         <SidebarLink 
+            href="/admin/issues" 
+            icon="⚠️" 
+            label="Issue Management" 
+            active={pathname === '/admin/issues'}
+            badgeColor="bg-amber-500/20 text-amber-400"
+          />
+          <SidebarLink 
+            href="/admin/devices" 
+            icon="📱" 
+            label="Device Management" 
+            active={pathname === '/admin/devices'} 
+          />
+          <SidebarLink 
+            href="/admin/parts" 
+            icon="🧩" 
+            label="Parts Management" 
+            active={pathname.startsWith('/admin/parts')} 
+          />
+          <SidebarLink 
+            href="/admin/ai" 
+            icon="🤖" 
+            label="AI Model Management" 
+            active={pathname === '/admin/ai'} 
+          />
+          <SidebarLink 
+            href="/admin/blogs" 
+            icon="📝" 
+            label="Blog Post Management" 
+            active={pathname === '/admin/blogs'} 
+          />
+        </nav>
         </div>
 
         {/* Admin Information & Logout Button */}

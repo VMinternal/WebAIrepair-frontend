@@ -172,25 +172,31 @@ const loadDevices = async (page = 1, search = searchQuery) => {
                     <td className="px-6 py-4 font-semibold text-slate-100 group-hover:text-indigo-300 transition-colors">
                       {device.model}
                     </td>
-                    <td className="px-6 py-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => {
-                            setSelectedDevice(device);
-                            setIsModalOpen(true);
-                          }}
-                          className="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-indigo-600/20 hover:text-indigo-300 text-slate-300 border border-slate-700/60 hover:border-indigo-500/40 rounded-lg transition-all duration-150"
-                        >
-                          Update
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(device.id)}
-                          className="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-rose-600/20 hover:text-rose-300 text-slate-400 border border-slate-700/60 hover:border-rose-500/40 rounded-lg transition-all duration-150"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
+                   <td className="px-6 py-4 text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedDevice(device);
+                          setIsModalOpen(true);
+                        }}
+                        className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 hover:border-indigo-500/40 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(device.id)}
+                        className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 hover:border-rose-500/40 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Delete
+                      </button>
+                    </div>
+                  </td>
                   </tr>
                 ))
               )}

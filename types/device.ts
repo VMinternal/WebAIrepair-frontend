@@ -4,6 +4,7 @@ export interface Device {
   id: string;
   brand: string;
   model: string;
+  name?: string;
   created_at?: string;
   updated_at?: string;
 }

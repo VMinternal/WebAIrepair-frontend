@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Issue, CreateIssueInput, UpdateIssueInput } from '@/types/issue';
+import { Issue, UpdateIssueInput } from '@/types/issue';
 import { PaginatedResponse } from '@/types/user';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -9,6 +9,16 @@ const getAuthHeader = () => ({
     Authorization: `Bearer ${localStorage.getItem('token')}`,
   },
 });
+
+// Định nghĩa Interface ở BÊN NGOÀI object service
+export interface CreateIssueInput {
+  title: string;
+  description?: string;
+  causes?: string;
+  solutions?: string;
+  deviceId?: string;
+  partIds?: string[];
+}
 
 export const issueService = {
   // Get a paginated list of incidents
@@ -45,5 +55,4 @@ export const issueService = {
   async deleteIssue(id: string): Promise<void> {
     await axios.delete(`${API_URL}/issues/${id}`, getAuthHeader());
   },
-
 };

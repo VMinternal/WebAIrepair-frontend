@@ -12,11 +12,12 @@ export interface PartOption {
 
 export interface IssueFormData {
   title: string;
-  description: string;
-  deviceId: string;
-  causes: string;
-  solutions: string;
-  partIds: string[];
+  description?: string;
+  symptoms?: string; 
+  causes?: string;
+  solutions?: string;
+  deviceId?: string;
+  partIds?: string[];
 }
 
 export interface Device {
@@ -34,7 +35,8 @@ export interface Part {
 export interface Issue {
   id: string;
   title: string;
-  description: string;
+  description?: string;
+  symptoms?: string;
   causes?: string;
   solutions?: string;
   similarityScore?: number; // % of similarity returned when using AI Search.
@@ -46,8 +48,9 @@ export interface Issue {
 
 export interface CreateIssueInput {
   title: string;
-  description: string;
+  description?: string;
   causes?: string;
+  symptoms?: string;
   solutions?: string;
   deviceId?: string;
   partIds?: string[];

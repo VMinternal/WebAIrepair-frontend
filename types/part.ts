@@ -11,7 +11,8 @@ export interface Part {
   createdBy?: string;
   createdAt: string;
   updatedAt: string;
-  devices?: Device[];
+  deviceId?: string; //Foreign Key directly from Postgres
+  devices?: Device[]; //// Object relation when using JOIN / include
   issues?: Issue[];
 }
 

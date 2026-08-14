@@ -1,103 +1,43 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Device, CreateDeviceInput } from '@/types/device';
-import { PaginationMeta } from '@/types/user';
-import { deviceService } from '@/services/device.service';
-
-interface DeviceFormData {
-  brand: string;
-  model: string;
-}
+import React from 'react';
+import { useAdminDevices } from './useAdminDevices';
+import DeviceModal from './DeviceModal';
 
 export default function AdminDevicesPage() {
-  const [devices, setDevices] = useState<Device[]>([]);
-  const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Load Device list
-const loadDevices = async (page = 1, search = searchQuery) => {
-  try {
-    setLoading(true);
-    const res = await deviceService.getDevices(page, 10, search);
-    setDevices(res.data);
-    setMeta(res.meta);
-  } catch (err) {
-    console.error('Error loading device list:', err);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    loadDevices(1, searchQuery);
-  };
-
-  const handleResetSearch = () => {
-    setSearchQuery('');
-    loadDevices(1, '');
-  };
-
-  const handleDeleteClick = (id: string) => {
-    setDeletingId(id);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!deletingId) return;
-    try {
-      await deviceService.deleteDevice(deletingId);
-      setDevices((prev) => prev.filter((item) => item.id !== deletingId));
-    } catch (err: any) {
-      console.error('Delete error:', err);
-      alert(err.response?.data?.message || 'Delete failed!');
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  const handleFormSubmit = async (formData: DeviceFormData) => {
-    try {
-      if (selectedDevice) {
-        await deviceService.updateDevice(selectedDevice.id, formData);
-      } else {
-        await deviceService.createDevice(formData);
-      }
-      setIsModalOpen(false);
-      loadDevices(meta?.currentPage || 1);
-    } catch (err: any) {
-      console.error('Error saving device:', err);
-      alert(err.response?.data?.message || 'Saving device failed!');
-    }
-  };
-
-  useEffect(() => {
-    loadDevices();
-  }, []);
+  const {
+    devices,
+    meta,
+    loading,
+    isModalOpen,
+    setIsModalOpen,
+    selectedDevice,
+    setSelectedDevice,
+    deletingId,
+    setDeletingId,
+    searchQuery,
+    setSearchQuery,
+    loadDevices,
+    handleSearch,
+    handleResetSearch,
+    handleConfirmDelete,
+    handleFormSubmit,
+  } = useAdminDevices();
 
   return (
     <div className="max-w-7xl mx-auto p-6 text-slate-100 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
-            Device Management
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Manage hardware devices, brands, and models
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Device Management</h1>
+          <p className="text-sm text-slate-400 mt-1">Manage hardware devices, brands, and models</p>
         </div>
         <button
           onClick={() => {
             setSelectedDevice(null);
             setIsModalOpen(true);
           }}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm rounded-xl shadow-lg shadow-indigo-600/20 transition-all duration-200"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl shadow-lg shadow-indigo-600/20 transition-all"
         >
           <span>+</span>
           <span>Add New Device</span>
@@ -121,7 +61,7 @@ const loadDevices = async (page = 1, search = searchQuery) => {
           </div>
           <button
             type="submit"
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 transition-all duration-200 whitespace-nowrap"
+            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl transition-all"
           >
             Search
           </button>
@@ -129,7 +69,7 @@ const loadDevices = async (page = 1, search = searchQuery) => {
             <button
               type="button"
               onClick={handleResetSearch}
-              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-sm rounded-xl transition-all whitespace-nowrap"
+              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-sm rounded-xl transition-all"
             >
               Reset
             </button>
@@ -137,11 +77,11 @@ const loadDevices = async (page = 1, search = searchQuery) => {
         </form>
       </div>
 
-      {/* Data Table */}
+      {/* Table */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-950/50 text-slate-400 border-b border-slate-800/80 text-xs uppercase tracking-wider font-semibold">
+            <thead className="bg-slate-950/50 text-slate-400 border-b border-slate-800/80 text-xs uppercase font-semibold">
               <tr>
                 <th className="px-6 py-4">Brand</th>
                 <th className="px-6 py-4">Model</th>
@@ -151,19 +91,15 @@ const loadDevices = async (page = 1, search = searchQuery) => {
             <tbody className="divide-y divide-slate-800/60">
               {loading ? (
                 <tr>
-                  <td colSpan={3} className="text-center py-12 text-slate-400">
-                    Loading data...
-                  </td>
+                  <td colSpan={3} className="text-center py-12 text-slate-400">Loading data...</td>
                 </tr>
               ) : devices.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="text-center py-12 text-slate-500">
-                    No devices found.
-                  </td>
+                  <td colSpan={3} className="text-center py-12 text-slate-500">No devices found.</td>
                 </tr>
               ) : (
                 devices.map((device) => (
-                  <tr key={device.id} className="hover:bg-slate-800/40 transition-colors duration-150 group">
+                  <tr key={device.id} className="hover:bg-slate-800/40 transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 rounded-lg text-xs font-semibold">
                         {device.brand}
@@ -172,31 +108,25 @@ const loadDevices = async (page = 1, search = searchQuery) => {
                     <td className="px-6 py-4 font-semibold text-slate-100 group-hover:text-indigo-300 transition-colors">
                       {device.model}
                     </td>
-                   <td className="px-6 py-4 text-right whitespace-nowrap">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedDevice(device);
-                          setIsModalOpen(true);
-                        }}
-                        className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 hover:border-indigo-500/40 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(device.id)}
-                        className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 hover:border-rose-500/40 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+                    <td className="px-6 py-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedDevice(device);
+                            setIsModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-medium transition-all"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => setDeletingId(device.id)}
+                          className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl text-xs font-medium transition-all"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -228,7 +158,7 @@ const loadDevices = async (page = 1, search = searchQuery) => {
         </div>
       )}
 
-      {/* Device Modal Form */}
+      {/* Device Form Modal */}
       <DeviceModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -236,28 +166,26 @@ const loadDevices = async (page = 1, search = searchQuery) => {
         initialData={selectedDevice}
       />
 
-      {/* Custom Confirm Delete Modal */}
+      {/* Confirm Delete Modal */}
       {deletingId && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a202c] border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 text-left">
-            <h3 className="text-lg font-bold text-white">
-              Confirm device deletion
-            </h3>
+          <div className="bg-[#1a202c] border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <h3 className="text-lg font-bold text-white">Confirm device deletion</h3>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Are you sure you want to remove this device? This action cannot be undone and may fail if associated records exist.
+              Are you sure you want to remove this device? This action cannot be undone.
             </p>
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setDeletingId(null)}
-                className="px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDelete}
-                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-medium shadow-lg shadow-red-600/30 transition"
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-medium transition"
               >
                 Agree to delete
               </button>
@@ -265,119 +193,6 @@ const loadDevices = async (page = 1, search = searchQuery) => {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function DeviceModal({
-  isOpen,
-  onClose,
-  onSubmit,
-  initialData,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (formData: DeviceFormData) => void;
-  initialData: Device | null;
-}) {
-  const [formData, setFormData] = useState<DeviceFormData>({
-    brand: '',
-    model: '',
-  });
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        brand: initialData.brand || '',
-        model: initialData.model || '',
-      });
-    } else {
-      setFormData({
-        brand: '',
-        model: '',
-      });
-    }
-  }, [initialData, isOpen]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-800 text-slate-100 p-6 rounded-2xl w-full max-w-md shadow-2xl space-y-5">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-          <div>
-            <h2 className="text-lg font-bold text-white">
-              {initialData ? 'Edit Device' : 'Add New Device'}
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Fill in the device details
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 transition"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Form Content */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSubmit(formData);
-          }}
-          className="space-y-4"
-        >
-          {/* Brand Input */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
-              Brand Name <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Apple, Samsung, Dell"
-              className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
-              value={formData.brand}
-              onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-            />
-          </div>
-
-          {/* Model Input */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
-              Model Name <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. iPhone 14 Pro, Galaxy S23, XPS 13"
-              className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
-              value={formData.model}
-              onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-            />
-          </div>
-
-          {/* Buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium rounded-xl text-sm shadow-lg shadow-indigo-600/20 transition"
-            >
-              {initialData ? 'Save Changes' : 'Create Device'}
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   );
 }

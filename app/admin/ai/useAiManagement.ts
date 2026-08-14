@@ -105,10 +105,13 @@ export function useAiManagement() {
       setIsSearching(true);
       setSearchResults(null);
 
+      const simValue = Number(minSimilarity);
+      const normalizedSimilarity = simValue > 1 ? simValue / 100 : simValue;
+
       const res = await aiService.testSearch({
-        query: queryText,
+        queryText: queryText,
         topK: Number(topK),
-        threshold: Number(minSimilarity),
+        minSimilarity: normalizedSimilarity,
       });
 
       setSearchResults(res);

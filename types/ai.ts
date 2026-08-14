@@ -20,8 +20,9 @@ export interface TestSearchResponse {
 }
 
 export interface TestSearchDto {
-  query: string;        
+  queryText: string;        
   topK?: number;        // Number of results (1-20)
+  minSimilarity?: number;
   threshold?: number;   // Similarity (0.0 - 1.0)
   deviceId?: string;
 }

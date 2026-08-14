@@ -30,11 +30,11 @@ export const aiService = {
 
   // Test AI diagnostic vector search
   async testSearch(data: TestSearchDto): Promise<TestSearchResponse> {
-   const res = await axios.post<TestSearchResponse>(
-    `${API_URL}/symptoms/search`, 
-    data, 
-    getAuthHeader()
-  );
+    const res = await axios.post<TestSearchResponse>(
+      `${API_URL}/ai/test-search`,
+      data, 
+      getAuthHeader()
+    );
     return res.data;
   },
 };

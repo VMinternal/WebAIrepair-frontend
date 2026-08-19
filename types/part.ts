@@ -1,5 +1,6 @@
 import { Device } from './device';
 import { Issue } from './issue';
+import type { PaginatedResponse, PaginationMeta } from './common';
 
 export interface Part {
   id: string;
@@ -16,6 +17,13 @@ export interface Part {
   issues?: Issue[];
 }
 
+export interface QueryPartParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  deviceId?: string;
+}
+
 export interface CreatePartInput {
   name: string;
   slug?: string;
@@ -27,4 +35,6 @@ export interface CreatePartInput {
 }
 
 export type UpdatePartInput = Partial<CreatePartInput>;
+
+export type PartListResponse = PaginatedResponse<Part>;
 

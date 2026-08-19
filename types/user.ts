@@ -1,3 +1,6 @@
+
+export type { PaginatedResponse, PaginationMeta } from './common';
+
 // Authorization Enum
 export enum UserRole {
   USER = 'user',
@@ -17,25 +20,12 @@ export interface User {
 
 // Data types to send when creating a new user.
 export interface CreateUserInput {
-email: string;
+  email: string;
   password: string;
   fullname?: string; 
   role?: UserRole;
   isActive?: boolean;
 }
 
-export interface PaginationMeta {
-  totalItems: number;
-  itemCount: number;
-  itemsPerPage: number;
-  totalPages: number;
-  currentPage: number;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: PaginationMeta;
-}
-
 // Data type for updating User (allows submission with missing fields)
-export type UpdateUserInput = Partial<CreateUserInput>; 
+export type UpdateUserInput = Partial<CreateUserInput>;

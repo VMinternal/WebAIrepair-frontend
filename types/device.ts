@@ -1,4 +1,4 @@
-import { PaginatedResponse } from './user';
+import type { PaginatedResponse, PaginationMeta } from './common';
 
 export interface Device {
   id: string;

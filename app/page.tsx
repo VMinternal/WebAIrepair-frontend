@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 // Import các mảnh ghép vừa được tách ra từ thư mục _components
 import BookingForm from './_components/BookingForm';
 import TrackingForm from './_components/TrackingForm';
 import LoginModal from './_components/LoginModal';
 import RegisterModal from './_components/RegisterModal';
+import BlogList from './_components/BlogList';
 
 export default function UnifiedHomePage() {
   const router = useRouter();
@@ -66,6 +68,12 @@ export default function UnifiedHomePage() {
           <button onClick={() => setActiveTab('welcome')} className={`transition ${activeTab === 'welcome' ? 'text-emerald-400 font-bold' : 'hover:text-emerald-400'}`}>Homepage</button>
           <button onClick={() => setActiveTab('booking')} className={`transition ${activeTab === 'booking' ? 'text-emerald-400 font-bold' : 'hover:text-emerald-400'}`}>Book</button>
           <button onClick={() => setActiveTab('tracking')} className={`transition ${activeTab === 'tracking' ? 'text-emerald-400 font-bold' : 'hover:text-emerald-400'}`}>Check Schedule</button>
+          <Link 
+              href="/customer/blogs" 
+              className="text-slate-400 hover:text-white transition"
+            >
+              Tech Blog
+          </Link>
 
           {/* 👑 ADMIN DASHBOARD BUTTON  */}
           {currentUser?.role === 'admin' && (
@@ -187,6 +195,12 @@ export default function UnifiedHomePage() {
                   >
                    Track Progress 🔍
                   </button>
+                  <Link 
+                    href="/customer/blogs"
+                    className="px-6 py-4 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 text-white font-bold rounded-2xl shadow-xl transition transform hover:-translate-y-1 flex items-center gap-2"
+                    >
+                    Tech Blog & Articles 📖
+                  </Link>
                 </div>
               </div>
             )}

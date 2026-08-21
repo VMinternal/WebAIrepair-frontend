@@ -12,7 +12,7 @@ export interface Tag {
 
 export interface Author {
   id: string;
-  fullName: string;
+  fullname: string;
   role?: string;
   email: string;
 }

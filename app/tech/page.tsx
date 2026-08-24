@@ -15,20 +15,37 @@ export default function TechPage() {
             <span>👋</span> Hello, Technician!
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Overview of the day's repair work, parts lookup, and AI support.
+            Overview of the day's repair work, appointments, parts lookup, and AI support.
           </p>
         </div>
-        <button
-          onClick={() => router.push('/tech/issues')}
-          className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20"
-        >
-          <span>🛠️</span>
-          <span>View Repair List</span>
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => router.push('/tech/appointment')}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+          >
+            <span>📅</span>
+            <span>View Appointments</span>
+          </button>
+          <button
+            onClick={() => router.push('/tech/issues')}
+            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20"
+          >
+            <span>🛠️</span>
+            <span>View Repair List</span>
+          </button>
+        </div>
       </div>
 
       {/* Metric Cards for Technicians */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <StatCard 
+          title="Appointments & Jobs" 
+          value="5" 
+          change="2 lịch hẹn mới" 
+          icon="📅" 
+          color="border-blue-500/30"
+          changeColor="text-blue-400"
+        />
         <StatCard 
           title="Assigned Incident" 
           value="12" 
@@ -68,8 +85,17 @@ export default function TechPage() {
         <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
           <span>🚀</span> Quick Action Shortcuts
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           
+          <button 
+            onClick={() => router.push('/tech/appointment')} 
+            className="p-4 bg-slate-950 border border-slate-800 hover:border-blue-500/50 rounded-xl text-left transition group"
+          >
+            <span className="text-xl block mb-2 group-hover:scale-110 transition-transform">📅</span>
+            <p className="text-xs font-bold text-white">Appointments</p>
+            <p className="text-[10px] text-slate-500">Claim new jobs & view schedule.</p>
+          </button>
+
           <button 
             onClick={() => router.push('/tech/issues')} 
             className="p-4 bg-slate-950 border border-slate-800 hover:border-cyan-500/50 rounded-xl text-left transition group"

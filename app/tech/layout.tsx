@@ -66,6 +66,14 @@ export default function TechLayout({
               label="Work Overview" 
               active={pathname === '/tech'} 
             />
+            {/* BỔ SUNG MỤC APPOINTMENTS */}
+            <SidebarLink 
+              href="/tech/appointment" 
+              icon="📅" 
+              label="Appointments & Jobs" 
+              active={pathname.startsWith('/tech/appointments')} 
+              badgeColor="bg-blue-500/20 text-blue-400"
+            />
             <SidebarLink 
               href="/tech/issues" 
               icon="🛠️" 
@@ -130,7 +138,7 @@ export default function TechLayout({
         {/* Fixed Header */}
         <header className="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-10">
           <div className="text-xs text-slate-400 font-mono">
-            Technician / <span className="text-white font-bold capitalize">{pathname.replace('/tech', '') || 'Overview'}</span>
+            Technician / <span className="text-white font-bold capitalize">{pathname.replace('/tech', '').replace('/', '') || 'Overview'}</span>
           </div>
 
           <div className="flex items-center space-x-4">

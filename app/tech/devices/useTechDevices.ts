@@ -69,7 +69,7 @@ export function useAdminDevices() {
       console.error('Error saving device:', err);
       const status = err.response?.status;
       const serverMessage = err.response?.data?.message;
-      let errorMessage = 'Lưu thiết bị thất bại!';
+      let errorMessage = 'Failed to save device!';
 
       if (status === 409) {
         errorMessage = 'This device already exists in the system!';

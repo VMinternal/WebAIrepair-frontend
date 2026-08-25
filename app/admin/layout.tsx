@@ -4,6 +4,15 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 
+interface SidebarLinkProps {
+  href: string;
+  icon: string;
+  label: string;
+  active: boolean;
+  badge?: string | number;
+  badgeColor?: string;
+}
+
 export default function AdminLayout({
   children,
 }: {
@@ -33,7 +42,7 @@ export default function AdminLayout({
     router.push('/');
   };
 
-  //If authentication is not yet complete, hide the interface to avoid data leakage.
+  // If authentication is not yet complete, hide the interface to avoid data leakage.
   if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-emerald-400 font-mono text-sm">
@@ -60,51 +69,58 @@ export default function AdminLayout({
           </Link>
 
           {/* Navigation Menu Links */}
-         <nav className="space-y-1.5">
-          <SidebarLink 
-            href="/admin" 
-            icon="📊" 
-            label="Overview" 
-            active={pathname === '/admin'} 
-          />
-          <SidebarLink 
-            href="/admin/users" 
-            icon="👥" 
-            label="User Management" 
-            active={pathname === '/admin/users'} 
-          />
-         <SidebarLink 
-            href="/admin/issues" 
-            icon="⚠️" 
-            label="Issue Management" 
-            active={pathname === '/admin/issues'}
-            badgeColor="bg-amber-500/20 text-amber-400"
-          />
-          <SidebarLink 
-            href="/admin/devices" 
-            icon="📱" 
-            label="Device Management" 
-            active={pathname === '/admin/devices'} 
-          />
-          <SidebarLink 
-            href="/admin/parts" 
-            icon="🧩" 
-            label="Parts Management" 
-            active={pathname.startsWith('/admin/parts')} 
-          />
-          <SidebarLink 
-            href="/admin/ai" 
-            icon="🤖" 
-            label="AI Model Management" 
-            active={pathname === '/admin/ai'} 
-          />
-          <SidebarLink 
-            href="/admin/blogs" 
-            icon="📝" 
-            label="Blog Post Management" 
-            active={pathname === '/admin/blogs'} 
-          />
-        </nav>
+          <nav className="space-y-1.5">
+            <SidebarLink 
+              href="/admin" 
+              icon="📊" 
+              label="Overview" 
+              active={pathname === '/admin'} 
+            />
+            {/* ✅ Added Appointments Navigation Link */}
+            <SidebarLink 
+              href="/admin/appointment" 
+              icon="📅" 
+              label="Appointments" 
+              active={pathname.startsWith('/admin/appointment')} 
+            />
+            <SidebarLink 
+              href="/admin/users" 
+              icon="👥" 
+              label="User Management" 
+              active={pathname.startsWith('/admin/users')} 
+            />
+            <SidebarLink 
+              href="/admin/issues" 
+              icon="⚠️" 
+              label="Issue Management" 
+              active={pathname.startsWith('/admin/issues')}
+              badgeColor="bg-amber-500/20 text-amber-400"
+            />
+            <SidebarLink 
+              href="/admin/devices" 
+              icon="📱" 
+              label="Device Management" 
+              active={pathname.startsWith('/admin/devices')} 
+            />
+            <SidebarLink 
+              href="/admin/parts" 
+              icon="🧩" 
+              label="Parts Management" 
+              active={pathname.startsWith('/admin/parts')} 
+            />
+            <SidebarLink 
+              href="/admin/ai" 
+              icon="🤖" 
+              label="AI Model Management" 
+              active={pathname.startsWith('/admin/ai')} 
+            />
+            <SidebarLink 
+              href="/admin/blogs" 
+              icon="📝" 
+              label="Blog Post Management" 
+              active={pathname.startsWith('/admin/blogs')} 
+            />
+          </nav>
         </div>
 
         {/* Admin Information & Logout Button */}
@@ -136,8 +152,9 @@ export default function AdminLayout({
         
         {/* Fixed Header */}
         <header className="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-10">
+          {/* ✅ Translated breadcrumb from "Hệ Thống Quản Trị" to "Admin System" */}
           <div className="text-xs text-slate-400 font-mono">
-            Hệ Thống Quản Trị / <span className="text-white font-bold capitalize">{pathname.replace('/admin', '') || 'Overview'}</span>
+            Admin System / <span className="text-white font-bold capitalize">{pathname.replace('/admin/', '').replace('/admin', '') || 'Overview'}</span>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -156,7 +173,7 @@ export default function AdminLayout({
           </div>
         </header>
 
-        {/* The subpage content will be inserted here. */}
+        {/* Main page content area */}
         <main className="flex-1 p-8 overflow-y-auto">
           {children}
         </main>
@@ -166,8 +183,8 @@ export default function AdminLayout({
   );
 }
 
-// Sub-components for links in the sidebar.
-function SidebarLink({ href, icon, label, active, badge, badgeColor }: any) {
+// Sub-component for sidebar navigation links
+function SidebarLink({ href, icon, label, active, badge, badgeColor }: SidebarLinkProps) {
   return (
     <Link
       href={href}

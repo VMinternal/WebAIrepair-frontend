@@ -1,72 +1,44 @@
 'use client';
 
-import { useTechAppointments } from './useTechAppointments';
-import AppointmentModal from './AppointmentModal';
+import { useAdminAppointments } from './useAdminAppointments';
+import AdminAppointmentModal from './AdminAppointmentModal';
 import { AppointmentStatus } from '@/types/appointment';
 
-export default function TechAppointmentsPage() {
+export default function AdminAppointmentsPage() {
   const {
-    activeTab,
-    setActiveTab,
-    availableJobs,
-    myJobs,
+    appointments,
     meta,
     loading,
+    statusFilter,
+    setStatusFilter,
+    searchQuery,
+    setSearchQuery,
     isModalOpen,
     setIsModalOpen,
     selectedAppointment,
     setSelectedAppointment,
-    searchQuery,
-    setSearchQuery,
     handleSearch,
     handleResetSearch,
-    handleClaimJob,
-    handleUpdateStatus,
-    handleReportSubmit,
+    handleDeleteAppointment,
     refreshData,
-  } = useTechAppointments();
+  } = useAdminAppointments();
 
-  const currentJobs = activeTab === 'AVAILABLE' ? availableJobs : myJobs;
-
-  const handleOpenReportModal = (job: any) => {
+  const handleOpenModal = (job: any) => {
     setSelectedAppointment(job);
     setIsModalOpen(true);
   };
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 text-slate-100 min-h-screen">
-      {/* Header & Tabs */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">
-            Technical Appointment Management
+            Appointment Management (Admin)
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Monitor the job market and manage orders currently in progress.
+            Track all repair appointments and assign tasks or update system status.
           </p>
-        </div>
-
-        <div className="flex gap-2 bg-slate-800/80 p-1.5 rounded-xl border border-slate-700/50">
-          <button
-            onClick={() => setActiveTab('AVAILABLE')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-              activeTab === 'AVAILABLE'
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
-            }`}
-          >
-            Job Market (Pending)
-          </button>
-          <button
-            onClick={() => setActiveTab('MY_JOBS')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-              activeTab === 'MY_JOBS'
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
-            }`}
-          >
-            My business
-          </button>
         </div>
       </div>
 
@@ -81,19 +53,35 @@ export default function TechAppointmentsPage() {
             className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
           />
         </div>
+
+        {/* Status Filter Dropdown for Admins */}
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
+        >
+          <option value="ALL">All statuses</option>
+          <option value={AppointmentStatus.PENDING}>Awaiting acceptance (PENDING)</option>
+          <option value={AppointmentStatus.ASSIGNED}>Assigned</option>
+          <option value={AppointmentStatus.IN_PROGRESS}>Under repair (IN_PROGRESS)</option>
+          <option value={AppointmentStatus.WAITING_PARTS}>Waiting for parts (WAITING_PARTS)</option>
+          <option value={AppointmentStatus.COMPLETED}>Completed (COMPLETED)</option>
+          <option value={AppointmentStatus.CANCELLED}>Cancelled</option>
+        </select>
+
         <button
           type="submit"
           className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-md shadow-blue-600/20"
         >
           Search
         </button>
-        {searchQuery && (
+        {(searchQuery || statusFilter !== 'ALL') && (
           <button
             type="button"
             onClick={handleResetSearch}
             className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors border border-slate-700"
           >
-           Clear filters
+            Clear filters
           </button>
         )}
       </form>
@@ -102,20 +90,16 @@ export default function TechAppointmentsPage() {
       {loading ? (
         <div className="text-center py-20 text-slate-400 space-y-2">
           <div className="inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-sm">Loading task list...</p>
+          <p className="text-sm">Loading appointment list...</p>
         </div>
-      ) : currentJobs.length === 0 ? (
+      ) : appointments.length === 0 ? (
         <div className="text-center py-20 bg-slate-900/50 border border-slate-800 rounded-2xl">
-          <p className="text-slate-400 font-medium">
-            {activeTab === 'AVAILABLE'
-              ? 'There are currently no jobs waiting to be accepted.'
-              : 'You havent accepted any tasks yet.'}
-          </p>
+          <p className="text-slate-400 font-medium">No appointments found.</p>
         </div>
       ) : (
-        /* List / Grid Render */
+        /* List Render */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {currentJobs.map((job) => (
+          {appointments.map((job) => (
             <div
               key={job.id}
               className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 space-y-4 shadow-xl flex flex-col justify-between transition-all duration-200"
@@ -131,13 +115,12 @@ export default function TechAppointmentsPage() {
                         ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                         : job.status === AppointmentStatus.COMPLETED
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                        : job.status === AppointmentStatus.CANCELLED
+                        ? 'bg-red-500/10 text-red-400 border-red-500/20'
                         : 'bg-purple-500/10 text-purple-400 border-purple-500/20'
                     }`}
                   >
-                    {job.status === AppointmentStatus.PENDING && 'Waiting to start the job'}
-                    {job.status === AppointmentStatus.ASSIGNED && 'Order received'}
-                    {job.status === AppointmentStatus.IN_PROGRESS && 'Under repair'}
-                    {job.status === AppointmentStatus.COMPLETED && 'Complete'}
+                    {job.status}
                   </span>
                   <span className="text-xs text-slate-500">
                     {job.createdAt
@@ -148,7 +131,7 @@ export default function TechAppointmentsPage() {
 
                 {/* Main Content */}
                 <div>
-                  <h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">
+                  <h3 className="text-lg font-bold text-white transition-colors">
                     {job.customerName}
                   </h3>
                   <p className="text-sm text-slate-400 font-mono mt-0.5">{job.phone}</p>
@@ -167,12 +150,12 @@ export default function TechAppointmentsPage() {
                   </p>
                 </div>
 
-                {/* Tech notes / Parts used (if any) */}
-                {activeTab === 'MY_JOBS' && (job.techNotes || job.usedParts?.length) && (
+                {/* Technician Notes / Parts */}
+                {(job.techNotes || (job.usedParts && job.usedParts.length > 0)) && (
                   <div className="text-xs space-y-1 bg-slate-800/20 p-2.5 rounded-lg border border-slate-800">
                     {job.techNotes && (
                       <p className="text-slate-400 italic">
-                        <strong className="text-slate-300 not-italic">Technical Note:</strong>{' '}
+                        <strong className="text-slate-300 not-italic">Technician's Note:</strong>{' '}
                         {job.techNotes}
                       </p>
                     )}
@@ -186,47 +169,20 @@ export default function TechAppointmentsPage() {
                 )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-2 border-t border-slate-800/80 space-y-2">
-                {activeTab === 'AVAILABLE' ? (
-                  <button
-                    onClick={() => handleClaimJob(job.id)}
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2.5 rounded-xl transition-all shadow-md shadow-blue-600/20"
-                  >
-                    Accept this job
-                  </button>
-                ) : (
-                  <div className="flex gap-2">
-                    {job.status === AppointmentStatus.ASSIGNED && (
-                      <button
-                        onClick={() =>
-                          handleUpdateStatus(job.id, AppointmentStatus.IN_PROGRESS)
-                        }
-                        className="flex-1 bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium py-2 rounded-lg transition-colors"
-                      >
-                        Start editing
-                      </button>
-                    )}
-
-                    {job.status === AppointmentStatus.IN_PROGRESS && (
-                      <button
-                        onClick={() =>
-                          handleUpdateStatus(job.id, AppointmentStatus.COMPLETED)
-                        }
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium py-2 rounded-lg transition-colors"
-                      >
-                        Complete
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => handleOpenReportModal(job)}
-                      className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium py-2 rounded-lg transition-colors"
-                    >
-                      Report / Details
-                    </button>
-                  </div>
-                )}
+              {/* Action Buttons for Admins */}
+              <div className="pt-2 border-t border-slate-800/80 flex gap-2">
+                <button
+                  onClick={() => handleOpenModal(job)}
+                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium py-2 rounded-lg transition-colors shadow-md shadow-blue-600/20"
+                >
+                 Details & Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteAppointment(job.id)}
+                  className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+                >
+                 Delete
+                </button>
               </div>
             </div>
           ))}
@@ -246,7 +202,7 @@ export default function TechAppointmentsPage() {
               onClick={() => refreshData(meta.currentPage - 1)}
               className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded-lg border border-slate-700 text-xs transition-colors"
             >
-              Previous page
+             Previous page
             </button>
             <button
               disabled={meta.currentPage >= meta.totalPages}
@@ -259,13 +215,13 @@ export default function TechAppointmentsPage() {
         </div>
       )}
 
-      {/* Appointment Modal */}
-        <AppointmentModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            appointment={selectedAppointment}
-            onSuccess={refreshData}
-        />
+      {/* Admin Appointment Modal */}
+      <AdminAppointmentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        appointment={selectedAppointment}
+        onSuccess={refreshData}
+      />
     </div>
   );
 }

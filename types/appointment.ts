@@ -4,7 +4,9 @@ export enum AppointmentStatus {
   PENDING = 'pending',
   ASSIGNED = 'assigned',
   IN_PROGRESS = 'in_progress',
+  WAITING_PARTS = 'waiting_parts',
   COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
 }
 
 export interface Appointment {
@@ -46,7 +48,11 @@ export interface CreateAppointmentInput {
   appointmentDate?: string;
 }
 
-export type UpdateAppointmentInput = Partial<CreateAppointmentInput>;
+export interface UpdateAppointmentInput extends Partial<CreateAppointmentInput> {
+  status?: AppointmentStatus;
+  techNotes?: string;
+  usedParts?: string[];
+}
 
 export interface UpdateStatusInput {
   status: AppointmentStatus;

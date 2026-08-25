@@ -2,15 +2,28 @@
 
 import { useState } from 'react';
 
+// Define a union type for the active tab that includes 'appointments'.
+type TabType = 'overview' | 'users' | 'issues' | 'devices' | 'ai' | 'blogs' | 'appointments';
+
+interface StatCardProps {
+  title: string;
+  value: string;
+  change: string;
+  icon: string;
+  color: string;
+}
+
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'issues' | 'devices' | 'ai' | 'blogs'>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
 
   return (
     <div className="space-y-8 animate-fade-in">
       
       {/* SET OF METRIC CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard title="Total Users" value="1,248" change="+12% this month" icon="👥" color="border-emerald-500/30" />
+        {/* ✅ Bổ sung StatCard cho Appointments */}
+        <StatCard title="Total Appointments" value="128" change="+8 new today" icon="📅" color="border-indigo-500/30" />
         <StatCard title="Errors Needing Correction" value="18" change="5 emergency cases" icon="🛠️" color="border-amber-500/30" />
         <StatCard title="Receiving Device" value="342" change="98% completed" icon="💻" color="border-blue-500/30" />
         <StatCard title="AI Accuracy" value="96.4%" change="Model: Local-E5" icon="🤖" color="border-purple-500/30" />
@@ -19,7 +32,18 @@ export default function AdminPage() {
       {/* SHORTCUT AREA */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
         <h3 className="text-sm font-bold text-white mb-4">🚀 Quick Management Shortcut</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          
+          {/* ✅ Bổ sung nút Quick Access vào trang Appointments */}
+          <button 
+            onClick={() => setActiveTab('appointments')} 
+            className={`p-4 bg-slate-950 border ${activeTab === 'appointments' ? 'border-indigo-500' : 'border-slate-800'} hover:border-indigo-500/50 rounded-xl text-left transition group`}
+          >
+            <span className="text-xl block mb-2 group-hover:scale-110 transition-transform">📅</span>
+            <p className="text-xs font-bold text-white">Appointments</p>
+            <p className="text-[10px] text-slate-500">Manage bookings & schedule</p>
+          </button>
+
           <button onClick={() => setActiveTab('users')} className="p-4 bg-slate-950 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition group">
             <span className="text-xl block mb-2 group-hover:scale-110 transition-transform">➕</span>
             <p className="text-xs font-bold text-white">Add Account</p>
@@ -57,7 +81,7 @@ export default function AdminPage() {
 }
 
 // Sub-component displays the Parameter Card.
-function StatCard({ title, value, change, icon, color }: any) {
+function StatCard({ title, value, change, icon, color }: StatCardProps) {
   return (
     <div className={`p-5 bg-slate-900 border ${color} rounded-2xl flex items-center justify-between`}>
       <div>

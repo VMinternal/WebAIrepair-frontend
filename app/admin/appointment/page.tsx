@@ -2,7 +2,7 @@
 
 import { useAdminAppointments } from './useAdminAppointments';
 import AdminAppointmentModal from './AdminAppointmentModal';
-import { AppointmentStatus } from '@/types/appointment';
+import { Appointment, AppointmentStatus } from '@/types/appointment';
 
 export default function AdminAppointmentsPage() {
   const {
@@ -23,7 +23,7 @@ export default function AdminAppointmentsPage() {
     refreshData,
   } = useAdminAppointments();
 
-  const handleOpenModal = (job: any) => {
+  const handleOpenModal = (job: Appointment) => {
     setSelectedAppointment(job);
     setIsModalOpen(true);
   };
@@ -57,16 +57,16 @@ export default function AdminAppointmentsPage() {
         {/* Status Filter Dropdown for Admins */}
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => setStatusFilter(e.target.value as AppointmentStatus | 'ALL')}
           className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
         >
           <option value="ALL">All statuses</option>
           <option value={AppointmentStatus.PENDING}>Awaiting acceptance (PENDING)</option>
-          <option value={AppointmentStatus.ASSIGNED}>Assigned</option>
+          <option value={AppointmentStatus.ASSIGNED}>Assigned (ASSIGNED)</option>
           <option value={AppointmentStatus.IN_PROGRESS}>Under repair (IN_PROGRESS)</option>
           <option value={AppointmentStatus.WAITING_PARTS}>Waiting for parts (WAITING_PARTS)</option>
           <option value={AppointmentStatus.COMPLETED}>Completed (COMPLETED)</option>
-          <option value={AppointmentStatus.CANCELLED}>Cancelled</option>
+          <option value={AppointmentStatus.CANCELLED}>Cancelled (CANCELLED)</option>
         </select>
 
         <button
@@ -88,16 +88,16 @@ export default function AdminAppointmentsPage() {
 
       {/* Loading State */}
       {loading ? (
-        <div className="text-center py-20 text-slate-400 space-y-2">
-          <div className="inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-sm">Loading appointment list...</p>
+        <div className="text-center py-20 text-slate-400 space-y-3">
+          <div className="inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-medium">Loading appointment list...</p>
         </div>
       ) : appointments.length === 0 ? (
         <div className="text-center py-20 bg-slate-900/50 border border-slate-800 rounded-2xl">
           <p className="text-slate-400 font-medium">No appointments found.</p>
         </div>
       ) : (
-        /* List Render */
+        /* List / Grid Render */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {appointments.map((job) => (
             <div
@@ -172,16 +172,18 @@ export default function AdminAppointmentsPage() {
               {/* Action Buttons for Admins */}
               <div className="pt-2 border-t border-slate-800/80 flex gap-2">
                 <button
+                  type="button"
                   onClick={() => handleOpenModal(job)}
                   className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium py-2 rounded-lg transition-colors shadow-md shadow-blue-600/20"
                 >
-                 Details & Edit
+                  Details & Edit
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleDeleteAppointment(job.id)}
                   className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-medium px-3 py-2 rounded-lg transition-colors"
                 >
-                 Delete
+                  Delete
                 </button>
               </div>
             </div>
@@ -193,18 +195,20 @@ export default function AdminAppointmentsPage() {
       {meta && meta.totalPages > 1 && (
         <div className="flex items-center justify-between border-t border-slate-800 pt-4 mt-6 text-sm">
           <p className="text-slate-400">
-            Trang <span className="text-white font-medium">{meta.currentPage}</span> /{' '}
-            {meta.totalPages} (Total {meta.totalItems} per order)
+            Page <span className="text-white font-medium">{meta.currentPage}</span> of{' '}
+            {meta.totalPages} ({meta.totalItems} total items)
           </p>
           <div className="flex gap-2">
             <button
+              type="button"
               disabled={meta.currentPage <= 1}
               onClick={() => refreshData(meta.currentPage - 1)}
               className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded-lg border border-slate-700 text-xs transition-colors"
             >
-             Previous page
+              Previous page
             </button>
             <button
+              type="button"
               disabled={meta.currentPage >= meta.totalPages}
               onClick={() => refreshData(meta.currentPage + 1)}
               className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded-lg border border-slate-700 text-xs transition-colors"

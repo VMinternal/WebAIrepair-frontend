@@ -56,6 +56,8 @@ export interface UpdateAppointmentInput extends Partial<CreateAppointmentInput> 
 
 export interface UpdateStatusInput {
   status: AppointmentStatus;
+  techNotes?: string;
+  usedParts?: string[];
 }
 
 export interface UpdateTechReportInput {

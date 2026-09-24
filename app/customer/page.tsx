@@ -56,13 +56,13 @@ export default function CustomerPortalPage() {
 
   // Handle sending AI Chat messages
  const handleSendMessage = async (textToSend?: string) => {
-  // Lấy tin nhắn từ tham số nếu là string, ngược lại lấy từ inputMessage
+  // Get the message from the parameter if it is a string; otherwise, get it from inputMessage.
   const query = (typeof textToSend === 'string' ? textToSend : inputMessage).trim();
   if (!query) return;
 
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  // 1. Thêm tin nhắn của User vào giao diện
+  // Add the user's message to the interface.
   const userMsg: Message = {
     id: Date.now().toString(),
     sender: 'user',

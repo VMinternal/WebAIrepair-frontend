@@ -32,6 +32,14 @@ export default function TechAppointmentsPage() {
     setIsModalOpen(true);
   };
 
+  const formatCurrency = (amount?: number) => {
+    if (amount === undefined || amount === null) return 'Chưa báo giá';
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(amount);
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 text-slate-100 min-h-screen">
       {/* Header & Tabs */}
@@ -132,6 +140,8 @@ export default function TechAppointmentsPage() {
                         ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
                         : job.status === AppointmentStatus.IN_PROGRESS
                         ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                        : job.status === AppointmentStatus.WAITING_PARTS
+                        ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
                         : job.status === AppointmentStatus.COMPLETED
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                         : 'bg-slate-800 text-slate-400 border-slate-700'
@@ -140,7 +150,9 @@ export default function TechAppointmentsPage() {
                     {job.status === AppointmentStatus.PENDING && 'Pending Claim'}
                     {job.status === AppointmentStatus.ASSIGNED && 'Order Assigned'}
                     {job.status === AppointmentStatus.IN_PROGRESS && 'Under Repair'}
+                    {job.status === AppointmentStatus.WAITING_PARTS && 'Waiting Parts'}
                     {job.status === AppointmentStatus.COMPLETED && 'Completed'}
+                    {job.status === AppointmentStatus.CANCELLED && 'Cancelled'}
                   </span>
                   <span className="text-xs text-slate-500">
                     {job.createdAt
@@ -157,7 +169,7 @@ export default function TechAppointmentsPage() {
                   <p className="text-sm text-slate-400 font-mono mt-0.5">{job.phone}</p>
                 </div>
 
-                <div className="space-y-1 text-sm bg-slate-800/40 p-3 rounded-xl border border-slate-800/80">
+                <div className="space-y-1.5 text-sm bg-slate-800/40 p-3 rounded-xl border border-slate-800/80">
                   <p className="text-slate-300">
                     <span className="text-slate-400">Device:</span>{' '}
                     <strong className="text-amber-400 font-medium">
@@ -168,25 +180,34 @@ export default function TechAppointmentsPage() {
                     <span className="text-slate-400">Issue:</span>{' '}
                     {job.issueDescription || job.issue?.title || 'No notes available'}
                   </p>
+                  {job.totalPrice !== undefined && (
+                    <p className="text-slate-300 pt-1 border-t border-slate-800/60">
+                      <span className="text-slate-400">Price:</span>{' '}
+                      <strong className="text-emerald-400 font-semibold">
+                        {formatCurrency(job.totalPrice)}
+                      </strong>
+                    </p>
+                  )}
                 </div>
 
                 {/* Tech notes / Parts used (if any) */}
-                {activeTab === 'MY_JOBS' && (job.techNotes || (job.usedParts && job.usedParts.length > 0)) && (
-                  <div className="text-xs space-y-1 bg-slate-800/20 p-2.5 rounded-lg border border-slate-800">
-                    {job.techNotes && (
-                      <p className="text-slate-400 italic">
-                        <strong className="text-slate-300 not-italic">Tech Note:</strong>{' '}
-                        {job.techNotes}
-                      </p>
-                    )}
-                    {job.usedParts && job.usedParts.length > 0 && (
-                      <p className="text-slate-400">
-                        <strong className="text-slate-300">Parts Used:</strong>{' '}
-                        {job.usedParts.join(', ')}
-                      </p>
-                    )}
-                  </div>
-                )}
+                {activeTab === 'MY_JOBS' &&
+                  (job.techNotes || (job.usedParts && job.usedParts.length > 0)) && (
+                    <div className="text-xs space-y-1 bg-slate-800/20 p-2.5 rounded-lg border border-slate-800">
+                      {job.techNotes && (
+                        <p className="text-slate-400 italic">
+                          <strong className="text-slate-300 not-italic">Tech Note:</strong>{' '}
+                          {job.techNotes}
+                        </p>
+                      )}
+                      {job.usedParts && job.usedParts.length > 0 && (
+                        <p className="text-slate-400">
+                          <strong className="text-slate-300">Parts Used:</strong>{' '}
+                          {job.usedParts.join(', ')}
+                        </p>
+                      )}
+                    </div>
+                  )}
               </div>
 
               {/* Action Buttons */}
@@ -213,7 +234,8 @@ export default function TechAppointmentsPage() {
                       </button>
                     )}
 
-                    {job.status === AppointmentStatus.IN_PROGRESS && (
+                    {(job.status === AppointmentStatus.IN_PROGRESS ||
+                      job.status === AppointmentStatus.WAITING_PARTS) && (
                       <button
                         type="button"
                         onClick={() =>

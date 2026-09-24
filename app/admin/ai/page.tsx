@@ -196,7 +196,7 @@ export default function AiManagementPage() {
 
             <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
               <h3 className="text-sm font-semibold text-slate-200">
-                2. Re-index toàn bộ
+                2. Re-index everything
               </h3>
               <p className="text-xs text-slate-400">
                 Delete the vector table and regenerate it entirely from scratch.

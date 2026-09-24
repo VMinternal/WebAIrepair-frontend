@@ -64,6 +64,7 @@ export interface UpdateTechReportInput {
   techNotes: string;
   usedParts?: string[];
   images?: string[];
+  totalPrice?: number;
 }
 
 export type AppointmentListResponse = PaginatedResponse<Appointment>;

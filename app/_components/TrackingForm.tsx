@@ -21,7 +21,7 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
     setTrackingResult(null);
 
     try {
-      // 1. Dùng biến môi trường và Endpoint public chuẩn của Backend
+      // Use environment variables and standard Endpoint exposure.
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const response = await fetch(
         `${baseUrl}/appointments/check-progress?phone=${encodeURIComponent(searchPhone.trim())}`
@@ -32,10 +32,10 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
         if (data && (Array.isArray(data) ? data.length > 0 : data)) {
           setTrackingResult(data);
         } else {
-          setTrackingError('🔍 Không tìm thấy lịch hẹn nào gắn liền với số điện thoại này!');
+          setTrackingError('No appointment found associated with this phone number!');
         }
       } else {
-        setTrackingError(`❌ Lỗi hệ thống: ${data.message || 'Không thể tra cứu'}`);
+        setTrackingError(`System error: ${data.message || 'Unable to look up'}`);
       }
     } catch (error) {
       console.log('API search error, fallback mock data:', error);
@@ -45,7 +45,8 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
           customerName: 'Vuong Quang Minh',
           phone: searchPhone,
           device: { model: 'iPhone 14 Pro Max' },
-          issueDescription: 'Màn hình sọc ngang, loang màu nhẹ',
+          issueDescription: 'Screen shows horizontal lines and slight color bleeding.',
+          totalPrice: 450000, 
           status: 'in_progress',
           createdAt: new Date().toISOString(),
         },
@@ -69,9 +70,9 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
       </button>
 
       <div className="mb-6">
-        <h3 className="text-2xl font-black text-white tracking-wide">Check Progress 🔍</h3>
+        <h3 className="text-2xl font-black text-white tracking-wide">Check Progress </h3>
         <p className="text-slate-400 text-xs mt-1">
-          Nhập số điện thoại để kiểm tra tiến độ sửa chữa theo thời gian thực.
+          Enter your phone number to check repair progress in real time.
         </p>
       </div>
 
@@ -99,13 +100,20 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
           if (!appointmentData) return null;
 
           const deviceName =
-            appointmentData.device?.model || appointmentData.device_name || 'Đang cập nhật thiết bị';
+            appointmentData.device?.model || appointmentData.device_name || 'Updating device';
           const issueDesc =
-            appointmentData.issueDescription || appointmentData.issue_description || 'Chưa cập nhật mô tả lỗi';
+            appointmentData.issueDescription || appointmentData.issue_description || 'Error description not yet updated.';
           const rawDate = appointmentData.appointmentDate || appointmentData.createdAt;
-          const formattedDate = rawDate ? new Date(rawDate).toLocaleString('vi-VN') : 'Mới cập nhật';
+          const formattedDate = rawDate ? new Date(rawDate).toLocaleString('vi-VN') : 'Just updated';
 
-          // 2. Chuẩn hóa Status tương thích với Backend Enum
+          // Handling price (VND) reading and formatting
+          const rawPrice = appointmentData.totalPrice ?? appointmentData.total_price ?? appointmentData.price;
+          const formattedPrice =
+            rawPrice && Number(rawPrice) > 0
+              ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(rawPrice))
+              : 'Chưa cập nhật / Đang kiểm tra';
+
+          // Standardize Status to be compatible with the backend Enum.
           const statusDb = (appointmentData.status || '').toLowerCase();
           const isCompleted = statusDb === 'completed';
           const isInProgress = ['in_progress', 'assigned', 'waiting_parts', 'repairing'].includes(statusDb);
@@ -120,7 +128,7 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
                   <p className="text-[10px] text-slate-500 mt-0.5">SĐT: {appointmentData.phone}</p>
                 </div>
 
-                {/* Badge trạng thái */}
+                {/* Status badge */}
                 <span
                   className={`px-3 py-1 rounded-full text-[11px] font-bold border ${
                     isCompleted
@@ -136,20 +144,27 @@ export default function TrackingForm({ setActiveTab }: TrackingFormProps) {
 
               <div className="space-y-2 text-xs">
                 <p>
-                  <span className="text-slate-500 font-medium">Thiết bị:</span>{' '}
+                  <span className="text-slate-500 font-medium">Device:</span>{' '}
                   <span className="text-slate-200 font-semibold">{deviceName}</span>
                 </p>
                 <p>
-                  <span className="text-slate-500 font-medium">Tình trạng lỗi:</span>{' '}
+                  <span className="text-slate-500 font-medium">Error status:</span>{' '}
                   <span className="text-slate-200">{issueDesc}</span>
                 </p>
                 <p>
-                  <span className="text-slate-500 font-medium">Ngày đặt lịch:</span>{' '}
+                  <span className="text-slate-500 font-medium">Booking date:</span>{' '}
                   <span className="text-slate-400">{formattedDate}</span>
+                </p>
+
+                <p className="flex items-center gap-1.5 pt-2 border-t border-slate-800/40">
+                  <span className="text-slate-500 font-medium">Total Cost:</span>{' '}
+                  <span className="text-emerald-400 font-bold text-sm">
+                    {formattedPrice}
+                  </span>
                 </p>
               </div>
 
-              {/* Timeline tiến độ */}
+              {/* Progress timeline */}
               <div className="pt-2 border-t border-slate-800/60">
                 <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-3">
                   Repair Process:

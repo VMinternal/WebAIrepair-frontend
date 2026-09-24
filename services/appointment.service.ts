@@ -11,11 +11,17 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-const getAuthHeader = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem('token')}`,
-  },
-});
+//Safe token retrieval function for Next.js (checks if running in the browser)
+const getAuthHeader = () => {
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+  return {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+};
 
 export const appointmentService = {
   // Customer / Admin creates a new appointment.

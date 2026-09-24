@@ -3,11 +3,16 @@ import { AiStatus, TestSearchDto, TestSearchResponse, AiActionResponse } from '@
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-const getAuthHeader = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem('token')}`,
-  },
-});
+const getAuthHeader = () => {
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+  return {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+};
 
 export const aiService = {
   // Retrieve AI Model status & Vector DB statistics

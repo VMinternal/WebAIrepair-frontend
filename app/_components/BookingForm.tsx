@@ -71,7 +71,7 @@ export default function BookingForm({ setActiveTab }: BookingFormProps) {
       </button>
       
       <div className="mb-6">
-        <h3 className="text-2xl font-black text-white tracking-wide">Đăng Ký Đặt Lịch</h3>
+        <h3 className="text-2xl font-black text-white tracking-wide">Book an Appointment</h3>
         <p className="text-slate-400 text-xs mt-1">Your appointment schedule will be synchronized directly to the database.</p>
       </div>
       
@@ -79,7 +79,7 @@ export default function BookingForm({ setActiveTab }: BookingFormProps) {
       <form onSubmit={handleBookingSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Họ và tên</label>
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Full name</label>
             <input 
               type="text" 
               required 
